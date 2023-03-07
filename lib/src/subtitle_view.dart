@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_subtitle/flutter_subtitle.dart';
 export 'package:flutter_subtitle/src/subtitle_controller.dart';
 
-class SubtitleView extends StatelessWidget {
+class SubtitleControllView extends StatelessWidget {
   final SubtitleController subtitleController;
   final int currentTimeInMilliseconds;
 
@@ -13,7 +13,7 @@ class SubtitleView extends StatelessWidget {
   final bool bordered;
   final EdgeInsets padding;
 
-  const SubtitleView({
+  const SubtitleControllView({
     Key? key,
     required this.currentTimeInMilliseconds,
     required this.subtitleController,
@@ -32,6 +32,34 @@ class SubtitleView extends StatelessWidget {
 
     if (text == '') return const SizedBox.shrink();
 
+    return SubtitleView(
+      text: text,
+      padding: padding,
+      bordered: bordered,
+      subtitleStyle: subtitleStyle,
+      backgroundColor: backgroundColor,
+    );
+  }
+}
+
+class SubtitleView extends StatelessWidget {
+  final Color? backgroundColor;
+  final SubtitleStyle subtitleStyle;
+  final bool bordered;
+  final EdgeInsets padding;
+  final String text;
+
+  const SubtitleView({
+    Key? key,
+    required this.text,
+    this.backgroundColor = const Color.fromRGBO(0, 0, 0, 0.6),
+    this.subtitleStyle = const SubtitleStyle(),
+    this.bordered = true,
+    this.padding = const EdgeInsets.all(4),
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       alignment: Alignment.bottomCenter,
       padding: padding,

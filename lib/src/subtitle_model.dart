@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart' show objectRuntimeType;
 import 'package:flutter_subtitle/src/subtitle_utils.dart';
 
 class Subtitle {
-  final int? number;
+  final int number;
   final int start;
   final int end;
   final String text;
@@ -14,20 +14,15 @@ class Subtitle {
     required this.text,
   });
 
-  factory Subtitle.fromString(String webVttString) {
+  factory Subtitle.fromString(String segment) {
+    final rang = matchTimeRange(segment);
     return Subtitle(
-      start: returnsMinimumTime(webVttString),
-      end: returnsMaximumTime(webVttString),
-      number: int.tryParse(webVttString.split("\n")[0]),
-      text: webVttString.split("\n").skip(2).join("\n"),
+      start: rang[0],
+      end: rang[1],
+      text: segment.split("\n").skip(2).join("\n"),
+      number: int.tryParse(segment.split("\n")[0]) ?? 0,
     );
   }
-  static const Subtitle none = Subtitle(
-    number: 0,
-    start: -1,
-    end: -1,
-    text: '',
-  );
 
   @override
   String toString() {

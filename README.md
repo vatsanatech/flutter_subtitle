@@ -5,9 +5,22 @@ import 'package:flutter_subtitle/flutter_subtitle.dart';
 
 final subtitleController = SubtitleController.string('''WEBVTT
 
-1
-00:02:25,603 --> 00:02:29,524
-This is an example test string''')..initialize();
+00:00:00.430 --> 00:00:04.360
+Hello! I'm Nanami Mami, nineteen years old,
+
+00:00:04.360 --> 00:00:07.100
+and I'm a college student living
+with my family in Tokyo.
+
+00:00:07.100 --> 00:00:10.640
+Kazu-kun and I dated for about a month.
+
+00:00:07.980 --> 00:00:09.190
+<b>Let's break up, okay?</b>
+
+00:00:09.530 --> 00:00:10.570
+<b>What?</b>
+''')..initialize();
 
 if (subtitleController != null)
   Positioned(
@@ -15,7 +28,7 @@ if (subtitleController != null)
     child: IgnorePointer(
       child: SubtitleControllView(
         subtitleController: subtitleController!,
-        currentTimeInMilliseconds: videoPlayerController.value.position.inMilliseconds,
+        inMilliseconds: videoPlayerController.value.position.inMilliseconds,
       ),
     ),
   )
@@ -25,18 +38,32 @@ if (subtitleController != null)
 ```dart
 import 'package:flutter_subtitle/flutter_subtitle.dart' hide Subtitle;
 
+// work with chewie
 final subtitleController = SubtitleController.string('''WEBVTT
 
-1
-00:02:25,603 --> 00:02:29,524
-This is an example test string''')..initialize();
+00:00:00.430 --> 00:00:04.360
+Hello! I'm Nanami Mami, nineteen years old,
+
+00:00:04.360 --> 00:00:07.100
+and I'm a college student living
+with my family in Tokyo.
+
+00:00:07.100 --> 00:00:10.640
+Kazu-kun and I dated for about a month.
+
+00:00:07.980 --> 00:00:09.190
+<b>Let's break up, okay?</b>
+
+00:00:09.530 --> 00:00:10.570
+<b>What?</b>
+''')..initialize();
 
 final chewieController = ChewieController(
   videoPlayerController: videoPlayerController,
-  subtitle: subtitleController!.subtitleDataList
+  subtitle: subtitleController!.subtitles
       .map(
         (e) => Subtitle(
-          index: e.number ?? -1,
+          index: e.number,
           start: Duration(milliseconds: e.start),
           end: Duration(milliseconds: e.end),
           text: e.text,

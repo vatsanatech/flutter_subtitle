@@ -13,17 +13,11 @@ Duration parseDuration(String s) {
   return Duration(hours: hours, minutes: minutes, microseconds: micros);
 }
 
-int returnsMinimumTime(
-  String webvttString,
-) {
-  var splitByBR = webvttString.split('\n');
-  return parseDuration(splitByBR[1].split('-->')[0].trim()).inMilliseconds;
-}
+List<int> matchTimeRange(String segment) {
+  final range = segment.split('\n')[1].split('-->');
 
-int returnsMaximumTime(
-  String webvttString,
-) {
-  var splitByBR = webvttString.split('\n');
-  parseDuration(splitByBR[1].split('-->')[1].trim()).inMilliseconds;
-  return parseDuration(splitByBR[1].split('-->')[1].trim()).inMilliseconds;
+  return [
+    parseDuration(range[0].trim()).inMilliseconds,
+    parseDuration(range[1].trim()).inMilliseconds
+  ];
 }

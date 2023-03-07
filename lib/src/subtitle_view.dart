@@ -6,7 +6,7 @@ export 'package:flutter_subtitle/src/subtitle_controller.dart';
 
 class SubtitleControllView extends StatelessWidget {
   final SubtitleController subtitleController;
-  final int currentTimeInMilliseconds;
+  final int inMilliseconds;
 
   final Color? backgroundColor;
   final SubtitleStyle subtitleStyle;
@@ -15,7 +15,7 @@ class SubtitleControllView extends StatelessWidget {
 
   const SubtitleControllView({
     Key? key,
-    required this.currentTimeInMilliseconds,
+    required this.inMilliseconds,
     required this.subtitleController,
     this.backgroundColor = const Color.fromRGBO(0, 0, 0, 0.6),
     this.subtitleStyle = const SubtitleStyle(),
@@ -25,9 +25,9 @@ class SubtitleControllView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final text = subtitleController.textFromWebttvBasedOnMilliseconds(
-      currentTimeInMilliseconds,
-      subtitleController.subtitleDataList,
+    final text = subtitleController.textFromMilliseconds(
+      inMilliseconds,
+      subtitleController.subtitles,
     );
 
     if (text == '') return const SizedBox.shrink();

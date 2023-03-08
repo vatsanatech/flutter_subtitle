@@ -1,8 +1,8 @@
 ## Getting started
 
 - [x] multiple line text
-- [] extract html
-- [] srt suporrt
+- [ ] extract html
+- [ ] srt suporrt
 
 ![](https://i.ibb.co/BGcxskh/image.png)
 

@@ -1,5 +1,11 @@
 ## Getting started
 
+- [x] multiple line text
+- [] extract html
+- [] srt suporrt
+
+![](https://i.ibb.co/BGcxskh/image.png)
+
 ```dart
 import 'package:flutter_subtitle/flutter_subtitle.dart';
 
@@ -56,7 +62,7 @@ Kazu-kun and I dated for about a month.
 
 00:00:09.530 --> 00:00:10.570
 <b>What?</b>
-''')..initialize();
+''');
 
 final chewieController = ChewieController(
   videoPlayerController: videoPlayerController,
@@ -78,5 +84,3 @@ final chewieController = ChewieController(
   },
 );
 ```
-
-![](https://i.ibb.co/zNXhmS9/Screenshot-20230307-183127.jpg)

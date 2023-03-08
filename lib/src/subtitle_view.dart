@@ -1,8 +1,5 @@
-library subtitle_view;
-
 import 'package:flutter/material.dart';
-import 'package:flutter_subtitle/flutter_subtitle.dart';
-export 'package:flutter_subtitle/src/subtitle_controller.dart';
+import '../flutter_subtitle.dart';
 
 class SubtitleControllView extends StatelessWidget {
   final SubtitleController subtitleController;

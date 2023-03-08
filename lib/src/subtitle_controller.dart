@@ -1,26 +1,15 @@
-import 'package:flutter_subtitle/flutter_subtitle.dart';
-
-Iterable<String> matchSegment(String text) => RegExp(
-      r'(\d+)?\n(\d{1,}:)?(\d{1,2}:)?(\d{1,2}).(\d+)\s?-->\s?(\d{1,}:)?(\d{1,2}:)?(\d{1,2}).(\d+)(.*(?:\r?(?!\r?).*)*)\n(.*(?:\r?\n(?!\r?\n).*)*)',
-    ).allMatches(text).map((m) => m.group(0) ?? "");
+import 'subtitle_model.dart';
+import 'subtitle_utils.dart';
 
 class SubtitleController {
-  final String dataSource;
+  final String fileContents;
 
-  List<Subtitle> subtitles = [];
+  List<Subtitle> get subtitles => _subtitles;
 
-  SubtitleController.string(this.dataSource);
+  final List<Subtitle> _subtitles;
 
-  SubtitleController initialize() {
-    subtitles = parse(dataSource);
-
-    return this;
-  }
-
-  List<Subtitle> parse(String data) {
-    final segments = matchSegment(data);
-    return segments.map((segment) => Subtitle.fromString(segment)).toList();
-  }
+  SubtitleController.string(this.fileContents)
+      : _subtitles = parseFromWebVTTString(fileContents);
 
   String textFromMilliseconds(int milliseconds, List<Subtitle>? subtitls) {
     try {

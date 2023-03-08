@@ -1,13 +1,3 @@
-## Getting started
-
-- [x] webvtt suporrt
-- [x] multiple line text
-- [ ] extract html
-- [ ] srt suporrt
-
-![](https://i.ibb.co/BGcxskh/image.png)
-
-```dart
 import 'dart:async';
 
 import 'package:chewie/chewie.dart';
@@ -157,4 +147,3 @@ class MyWebVTTCaptionFile extends ClosedCaptionFile {
   @override
   List<Caption> captions = [];
 }
-```

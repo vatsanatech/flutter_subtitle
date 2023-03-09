@@ -13,6 +13,13 @@ class Subtitle {
     required this.text,
   });
 
+  static get empty => const Subtitle(
+        number: -1,
+        start: -1,
+        end: -1,
+        text: '',
+      );
+
   @override
   String toString() {
     return '${objectRuntimeType(this, 'Subtitle')}('
@@ -21,4 +28,10 @@ class Subtitle {
         'end: $end, '
         'text: $text)';
   }
+}
+
+enum SubtitleFormat {
+  webvtt,
+
+  srt,
 }

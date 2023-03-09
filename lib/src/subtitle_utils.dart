@@ -1,4 +1,48 @@
+import 'dart:convert';
+
 import '../flutter_subtitle.dart';
+
+List<Subtitle> parseSubtitleString(String data, SubtitleFormat format) {
+  switch (format) {
+    case SubtitleFormat.webvtt:
+      return parseFromWebVTTString(data);
+    case SubtitleFormat.srt:
+      return parseFromSubRipString(data);
+    default:
+      return [];
+  }
+}
+
+//
+// 00:00:00.430 --> 00:00:04.360
+// Hello! I'm Nanami Mami, nineteen years old,
+Iterable<String> matchSubtitleStrings(String text) => RegExp(
+      _webVTTSegment,
+    ).allMatches(text).map((m) => m.group(0) ?? "");
+
+// video player
+List<List<String>> readSubtitleFile(String file) {
+  final List<String> lines = LineSplitter.split(file).toList();
+
+  final List<List<String>> subtitleStrings = <List<String>>[];
+  List<String> currentCaption = <String>[];
+  int lineIndex = 0;
+  for (final String line in lines) {
+    final bool isLineBlank = line.trim().isEmpty;
+    if (!isLineBlank) {
+      currentCaption.add(line);
+    }
+
+    if (isLineBlank || lineIndex == lines.length - 1) {
+      subtitleStrings.add(currentCaption);
+      currentCaption = <String>[];
+    }
+
+    lineIndex += 1;
+  }
+
+  return subtitleStrings;
+}
 
 List<Subtitle> parseFromWebVTTString(String data) {
   final List<Subtitle> subtitles = <Subtitle>[];
@@ -18,19 +62,35 @@ List<Subtitle> parseFromWebVTTString(String data) {
       number: int.tryParse(subtitleLine[0]) ?? subtitleNumber,
       start: range[0].inMilliseconds,
       end: range[1].inMilliseconds,
-      text: subtitleLine.skip(2).join("\n"),
+      text: extractTextFromHtml(subtitleLine.skip(2).join("\n")),
     ));
     subtitleNumber++;
   }
+
   return subtitles;
 }
 
-//
-// 00:00:00.430 --> 00:00:04.360
-// Hello! I'm Nanami Mami, nineteen years old,
-Iterable<String> matchSubtitleStrings(String text) => RegExp(
-      _webVTTSegment,
-    ).allMatches(text).map((m) => m.group(0) ?? "");
+List<Subtitle> parseFromSubRipString(String data) {
+  final List<Subtitle> subtitles = <Subtitle>[];
+  final subtitleStrings = readSubtitleFile(data);
+
+  for (final List<String> subtitleLine in subtitleStrings) {
+    final range = rangefromSubRipString(subtitleLine[1]);
+
+    if (range == null) {
+      continue;
+    }
+
+    subtitles.add(Subtitle(
+      number: int.parse(subtitleLine[0]),
+      start: range[0].inMilliseconds,
+      end: range[1].inMilliseconds,
+      text: extractTextFromHtml(subtitleLine.sublist(2).join('\n')),
+    ));
+  }
+
+  return subtitles;
+}
 
 // _parseWebVTTTimestamp('00:01:08.430')
 // returns
@@ -78,16 +138,42 @@ Duration? parseWebVTTTimestamp(String timestampString) {
   );
 }
 
+// Parses a time stamp in an SubRip file into a Duration.
+// For example:
+//
+// _parseSubRipTimestamp('00:01:59,084')
+// returns
+// Duration(hours: 0, minutes: 1, seconds: 59, milliseconds: 084)
+Duration? parseSubRipTimestamp(String timestampString) {
+  if (!RegExp(_subRipTimeStamp).hasMatch(timestampString)) {
+    return null;
+  }
+
+  final List<String> commaSections = timestampString.split(',');
+  final List<String> hoursMinutesSeconds = commaSections[0].split(':');
+
+  final int hours = int.parse(hoursMinutesSeconds[0]);
+  final int minutes = int.parse(hoursMinutesSeconds[1]);
+  final int seconds = int.parse(hoursMinutesSeconds[2]);
+  final int milliseconds = int.parse(commaSections[1]);
+
+  return Duration(
+    hours: hours,
+    minutes: minutes,
+    seconds: seconds,
+    milliseconds: milliseconds,
+  );
+}
+
 // 00:09.000 --> 00:11.000
 List<Duration>? rangeFromWebVTTString(String line) {
-  final RegExp format =
-      RegExp(_webVTTTimeStamp + _webVTTArrow + _webVTTTimeStamp);
+  final RegExp format = RegExp(_webVTTTimeStamp + _arrow + _webVTTTimeStamp);
 
   if (!format.hasMatch(line)) {
     return null;
   }
 
-  final List<String> times = line.split(_webVTTArrow);
+  final List<String> times = line.split(_arrow);
 
   final Duration? start = parseWebVTTTimestamp(times[0]);
   final Duration? end = parseWebVTTTimestamp(times[1]);
@@ -99,13 +185,38 @@ List<Duration>? rangeFromWebVTTString(String line) {
   return [start, end];
 }
 
-// String extractTextFromHtml(String htmlString) {
-//   return '';
-// }
+// 00:00:06,000 --> 00:00:12,074
+List<Duration>? rangefromSubRipString(String line) {
+  final RegExp format = RegExp(_subRipTimeStamp + _arrow + _subRipTimeStamp);
+
+  if (!format.hasMatch(line)) {
+    return null;
+  }
+
+  final List<String> times = line.split(_arrow);
+
+  final Duration? start = parseSubRipTimestamp(times[0]);
+  final Duration? end = parseSubRipTimestamp(times[1]);
+
+  if (start == null || end == null) {
+    return null;
+  }
+
+  return [start, end];
+}
+
+String extractTextFromHtml(String htmlString) {
+  final RegExp exp = RegExp(_html, multiLine: true, caseSensitive: true);
+  return htmlString.replaceAll(exp, '');
+}
 
 const String _webVTTTimeStamp = r'(\d+):(\d{2})(:\d{2})?\.(\d{3})';
 
-const String _webVTTArrow = r' --> ';
+const String _subRipTimeStamp = r'\d\d:\d\d:\d\d,\d\d\d';
+
+const String _arrow = r' --> ';
 
 const String _webVTTSegment =
     r'(\d+)?\n(\d{1,}:)?(\d{1,2}:)?(\d{1,2}).(\d+)\s?-->\s?(\d{1,}:)?(\d{1,2}:)?(\d{1,2}).(\d+)(.*(?:\r?(?!\r?).*)*)\n(.*(?:\r?\n(?!\r?\n).*)*)';
+
+const String _html = r'<[^>]*>|&[^;]+;';

@@ -1,10 +1,11 @@
-import 'dart:async';
+// import 'dart:convert' show utf8;
 
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_subtitle/flutter_subtitle.dart' hide Subtitle;
 import 'package:video_player/video_player.dart';
-import 'package:http/http.dart' as http;
+// import 'package:http/http.dart' as http;
 
 void main() => runApp(const VideoApp());
 
@@ -25,14 +26,25 @@ class _VideoAppState extends State<VideoApp> {
     super.initState();
   }
 
-  getWebVtt() async {
-    final body = (await http.get(Uri.parse(
-            'https://cc.zorores.com/20/2e/202eaab6dff289a5976399077449654e/eng-2.vtt')))
-        .body;
+  Future<String> loadAsset() async {
+    return await rootBundle.loadString('assets/webvtt.vtt');
+  }
 
-    _subtitleController = SubtitleController.string(body);
+  getWebVtt() async {
+    // https://cc.zorores.com/20/2e/202eaab6dff289a5976399077449654e/eng-2.vtt
+    // https://ohplayer.netlify.app/%E5%90%9B%E3%81%AE%E5%90%8D%E3%81%AF.srt
+
+    // final body = utf8.decode((await http.get(Uri.parse(
+    //         'https://cc.zorores.com/20/2e/202eaab6dff289a5976399077449654e/eng-2.vtt')))
+    //     .bodyBytes);
+
+    final body = await loadAsset();
+
+    _subtitleController =
+        SubtitleController.string(body, format: SubtitleFormat.webvtt);
     final controller = VideoPlayerController.network(
-        'https://vt1.doubanio.com/201902111139/0c06a85c600b915d8c9cbdbbaf06ba9f/view/movie/M/302420330.mp4');
+      'https://ohplayer.netlify.app/%E5%90%9B%E3%81%AE%E5%90%8D%E3%81%AF.mp4',
+    );
 
     await controller.initialize();
 
@@ -71,17 +83,19 @@ class _VideoAppState extends State<VideoApp> {
     );
 
     //// Caption
-    final webVTTCaptionFile = _subtitleController.subtitles
-        .map((e) => Caption(
-              number: e.number,
-              start: Duration(milliseconds: e.start),
-              end: Duration(milliseconds: e.end),
-              text: e.text,
-            ))
-        .toList();
+    // final webVTTCaptionFile = _subtitleController.subtitles
+    //     .map((e) => Caption(
+    //           number: e.number,
+    //           start: Duration(milliseconds: e.start),
+    //           end: Duration(milliseconds: e.end),
+    //           text: e.text,
+    //         ))
+    //     .toList();
 
-    controller.setClosedCaptionFile(
-        Future.value(MyWebVTTCaptionFile(webVTTCaptionFile)));
+    // controller.setClosedCaptionFile(
+    //     Future.value(MyWebVTTCaptionFile(webVTTCaptionFile)));
+
+    controller.setClosedCaptionFile(Future.value(WebVTTCaptionFile(body)));
   }
 
   @override
@@ -106,16 +120,6 @@ class _VideoAppState extends State<VideoApp> {
                 subtitleController: _subtitleController,
                 inMilliseconds: _chewieController!
                     .videoPlayerController.value.position.inMilliseconds,
-                backgroundColor: Colors.yellow,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                subtitleStyle: const SubtitleStyle(
-                  bordered: true,
-                  borderStyle: SubtitleBorderStyle(
-                    color: Colors.pink,
-                    strokeWidth: 6,
-                  ),
-                ),
               ),
             const SizedBox(height: 20),
             const Text('ClosedCaption'),

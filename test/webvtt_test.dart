@@ -8,18 +8,24 @@ void main() {
     SubtitleController parsedFile;
 
     test('with Metadata', () {
-      parsedFile = SubtitleController.string(_valid_vtt_with_metadata);
+      parsedFile = SubtitleController.string(
+        _valid_vtt_with_metadata,
+        format: SubtitleFormat.webvtt,
+      );
       expect(parsedFile.subtitles.length, 1);
 
       expect(parsedFile.subtitles[0].start,
           const Duration(seconds: 1).inMilliseconds);
       expect(parsedFile.subtitles[0].end,
           const Duration(seconds: 2, milliseconds: 500).inMilliseconds);
-      // expect(parsedFile.subtitles[0].text, 'We are in New York City');
+      expect(parsedFile.subtitles[0].text, 'We are in New York City');
     });
 
     test('with Multiline', () {
-      parsedFile = SubtitleController.string(_valid_vtt_with_multiline);
+      parsedFile = SubtitleController.string(
+        _valid_vtt_with_multiline,
+        format: SubtitleFormat.webvtt,
+      );
       expect(parsedFile.subtitles.length, 1);
 
       expect(parsedFile.subtitles[0].start,
@@ -31,20 +37,25 @@ void main() {
     });
 
     test('with styles tags', () {
-      parsedFile = SubtitleController.string(_valid_vtt_with_styles);
+      parsedFile = SubtitleController.string(
+        _valid_vtt_with_styles,
+        format: SubtitleFormat.webvtt,
+      );
       expect(parsedFile.subtitles.length, 3);
 
       expect(parsedFile.subtitles[0].start,
           const Duration(seconds: 5, milliseconds: 200).inMilliseconds);
       expect(parsedFile.subtitles[0].end,
           const Duration(seconds: 6).inMilliseconds);
-      // expect(parsedFile.subtitles[0].text,
-      //     "You know I'm so excited my glasses are falling off here.");
+      expect(parsedFile.subtitles[0].text,
+          "You know I'm so excited my glasses are falling off here.");
     });
 
     test('with subtitling features', () {
-      parsedFile =
-          SubtitleController.string(_valid_vtt_with_subtitling_features);
+      parsedFile = SubtitleController.string(
+        _valid_vtt_with_subtitling_features,
+        format: SubtitleFormat.webvtt,
+      );
       expect(parsedFile.subtitles.length, 3);
 
       expect(parsedFile.subtitles[0].number, 1);
@@ -56,7 +67,10 @@ void main() {
     });
 
     test('with [hours]:[minutes]:[seconds].[milliseconds].', () {
-      parsedFile = SubtitleController.string(_valid_vtt_with_hours);
+      parsedFile = SubtitleController.string(
+        _valid_vtt_with_hours,
+        format: SubtitleFormat.webvtt,
+      );
       expect(parsedFile.subtitles.length, 1);
 
       expect(parsedFile.subtitles[0].number, 1);
@@ -68,7 +82,10 @@ void main() {
     });
 
     test('with [minutes]:[seconds].[milliseconds].', () {
-      parsedFile = SubtitleController.string(_valid_vtt_without_hours);
+      parsedFile = SubtitleController.string(
+        _valid_vtt_without_hours,
+        format: SubtitleFormat.webvtt,
+      );
       expect(parsedFile.subtitles.length, 1);
 
       expect(parsedFile.subtitles[0].number, 1);
@@ -80,32 +97,49 @@ void main() {
     });
 
     test('with invalid seconds format returns empty subtitles.', () {
-      parsedFile = SubtitleController.string(_invalid_seconds);
+      parsedFile = SubtitleController.string(
+        _invalid_seconds,
+        format: SubtitleFormat.webvtt,
+      );
       expect(parsedFile.subtitles, isEmpty);
     });
 
     test('with invalid minutes format returns empty subtitles.', () {
-      parsedFile = SubtitleController.string(_invalid_minutes);
+      parsedFile = SubtitleController.string(
+        _invalid_minutes,
+        format: SubtitleFormat.webvtt,
+      );
       expect(parsedFile.subtitles, isEmpty);
     });
 
     test('with invalid hours format returns empty subtitles.', () {
-      parsedFile = SubtitleController.string(_invalid_hours);
+      parsedFile = SubtitleController.string(
+        _invalid_hours,
+        format: SubtitleFormat.webvtt,
+      );
       expect(parsedFile.subtitles, isEmpty);
     });
 
     test('with invalid component length returns empty subtitles.', () {
-      parsedFile = SubtitleController.string(_time_component_too_long);
+      parsedFile = SubtitleController.string(
+        _time_component_too_long,
+        format: SubtitleFormat.webvtt,
+      );
       expect(parsedFile.subtitles, isEmpty);
 
-      parsedFile = SubtitleController.string(_time_component_too_short);
+      parsedFile = SubtitleController.string(
+        _time_component_too_short,
+        format: SubtitleFormat.webvtt,
+      );
       expect(parsedFile.subtitles, isEmpty);
     });
   });
 
   test('Parses VTT file with malformed input.', () {
-    final SubtitleController parsedFile =
-        SubtitleController.string(_malformedVTT);
+    final SubtitleController parsedFile = SubtitleController.string(
+      _malformedVTT,
+      format: SubtitleFormat.webvtt,
+    );
 
     expect(parsedFile.subtitles.length, 1);
 
@@ -113,7 +147,7 @@ void main() {
     expect(firstCaption.number, 1);
     expect(firstCaption.start, const Duration(seconds: 13).inMilliseconds);
     expect(firstCaption.end, const Duration(seconds: 16).inMilliseconds);
-    // expect(firstCaption.text, 'Valid');
+    expect(firstCaption.text, 'Valid');
   });
 }
 
@@ -140,8 +174,7 @@ when the cues should start or end.
 
 1
 00:01.000 --> 00:02.500
-<v Roger Bingham>We are in New York City
-''';
+<v Roger Bingham>We are in New York City''';
 
 /// See https://www.w3.org/TR/webvtt1/#introduction-multiple-lines
 const String _valid_vtt_with_multiline = '''

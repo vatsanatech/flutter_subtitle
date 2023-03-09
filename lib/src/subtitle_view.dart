@@ -63,30 +63,26 @@ class SubtitleView extends StatelessWidget {
           padding: padding,
           child: Stack(
             children: [
-              Text(
-                text,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: subtitleStyle.fontSize,
-                  color:
-                      subtitleStyle.bordered ? null : subtitleStyle.textColor,
-                  foreground: subtitleStyle.bordered
-                      ? (Paint()
-                        ..style = subtitleStyle.borderStyle.style
-                        ..strokeWidth = subtitleStyle.borderStyle.strokeWidth
-                        ..color = subtitleStyle.borderStyle.color)
-                      : null,
-                ),
-              ),
               if (subtitleStyle.bordered)
                 Text(
                   text,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: subtitleStyle.textColor,
                     fontSize: subtitleStyle.fontSize,
+                    foreground: Paint()
+                      ..style = subtitleStyle.borderStyle.style
+                      ..strokeWidth = subtitleStyle.borderStyle.strokeWidth
+                      ..color = subtitleStyle.borderStyle.color,
                   ),
                 ),
+              Text(
+                text,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: subtitleStyle.textColor,
+                  fontSize: subtitleStyle.fontSize,
+                ),
+              ),
             ],
           ),
         ),

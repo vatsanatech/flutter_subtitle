@@ -36,6 +36,45 @@ void main() {
           '— It will perforate your stomach.\n— You could die.');
     });
 
+    test('with various line terminators', () {
+      parsedFile = SubtitleController.string(
+        _valid_vtt_with_newlines,
+        format: SubtitleFormat.webvtt,
+      );
+
+      final expectations = [
+        Subtitle(
+          number: 1,
+          start: const Duration(seconds: 0).inMilliseconds,
+          end: const Duration(seconds: 1).inMilliseconds,
+          text: 'Line feed subtitle.',
+        ),
+        Subtitle(
+          number: 2,
+          start: const Duration(seconds: 2).inMilliseconds,
+          end: const Duration(seconds: 3).inMilliseconds,
+          text: 'Carriage return subtitle.',
+        ),
+        Subtitle(
+          number: 3,
+          start: const Duration(seconds: 4).inMilliseconds,
+          end: const Duration(seconds: 5).inMilliseconds,
+          text: 'CR/LF subtitle.',
+        ),
+        Subtitle(
+          number: 4,
+          start: const Duration(seconds: 6).inMilliseconds,
+          end: const Duration(seconds: 7).inMilliseconds,
+          text: 'Chaos subtitle.',
+        ),
+      ];
+
+      expect(parsedFile.subtitles.length, expectations.length);
+      for (var i = 0; i < expectations.length; i++) {
+        expect(parsedFile.subtitles[i].toString(), expectations[i].toString());
+      }
+    });
+
     test('with styles tags', () {
       parsedFile = SubtitleController.string(
         _valid_vtt_with_styles,
@@ -185,6 +224,14 @@ WEBVTT
 — It will perforate your stomach.
 — You could die.
 
+''';
+
+/// https://www.w3.org/TR/webvtt1/#file-structure
+const String _valid_vtt_with_newlines = '''WEBVTT
+\n00:00:00.000 --> 00:00:01.000\nLine feed subtitle.\n
+\r00:00:02.000 --> 00:00:03.000\rCarriage return subtitle.\r
+\r\n00:00:04.000 --> 00:00:05.000\r\nCR/LF subtitle.\r\n
+\n00:00:06.000 --> 00:00:07.000\r\nChaos subtitle.\r
 ''';
 
 /// See https://www.w3.org/TR/webvtt1/#styling

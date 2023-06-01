@@ -13,13 +13,6 @@ List<Subtitle> parseSubtitleString(String data, SubtitleFormat format) {
   }
 }
 
-//
-// 00:00:00.430 --> 00:00:04.360
-// Hello! I'm Nanami Mami, nineteen years old,
-Iterable<String> matchSubtitleStrings(String text) => RegExp(
-      _webVTTSegment,
-    ).allMatches(text).map((m) => m.group(0) ?? "");
-
 // video player
 List<List<String>> readSubtitleFile(String file) {
   final List<String> lines = LineSplitter.split(file).toList();
@@ -45,29 +38,46 @@ List<List<String>> readSubtitleFile(String file) {
 }
 
 List<Subtitle> parseFromWebVTTString(String data) {
-  final List<Subtitle> subtitles = <Subtitle>[];
-  final subtitleStrings = matchSubtitleStrings(data);
+  final subtitles = <Subtitle>[];
+  final captions = RegExp(_webVTTSegment).allMatches(data);
 
   int subtitleNumber = 1;
 
-  for (final String subtitleString in subtitleStrings) {
-    final subtitleLine = subtitleString.split("\n");
-    final range = rangeFromWebVTTString(subtitleLine[1]);
-
-    if (range == null) {
+  for (final caption in captions) {
+    final start = _timestampToMillisecond(caption.groups([2, 3, 4, 5]));
+    final end = _timestampToMillisecond(caption.groups([6, 7, 8, 9]));
+    final text = caption.group(11);
+    if (start == null || end == null) {
       continue;
     }
 
     subtitles.add(Subtitle(
-      number: int.tryParse(subtitleLine[0]) ?? subtitleNumber,
-      start: range[0].inMilliseconds,
-      end: range[1].inMilliseconds,
-      text: extractTextFromHtml(subtitleLine.skip(2).join("\n")),
+      number: int.tryParse(caption.group(1) ?? '') ?? subtitleNumber,
+      start: start.inMilliseconds,
+      end: end.inMilliseconds,
+      text: extractTextFromHtml(text ?? ''),
     ));
     subtitleNumber++;
   }
 
   return subtitles;
+}
+
+Duration? _timestampToMillisecond(List<String?> segments) {
+  final hours = int.parse(segments[0]?.split(':')[0] ?? '0');
+  final minutes = int.parse(segments[1]?.split(':')[0] ?? '0');
+  final seconds = int.parse(segments[2] ?? '');
+  final milliseconds = int.parse(segments[3] ?? '0');
+  if (minutes > 59 || seconds > 59) {
+    return null;
+  }
+
+  return Duration(
+    hours: hours,
+    minutes: minutes,
+    seconds: seconds,
+    milliseconds: milliseconds,
+  );
 }
 
 List<Subtitle> parseFromSubRipString(String data) {
@@ -90,52 +100,6 @@ List<Subtitle> parseFromSubRipString(String data) {
   }
 
   return subtitles;
-}
-
-// _parseWebVTTTimestamp('00:01:08.430')
-// returns
-// Duration(hours: 0, minutes: 1, seconds: 8, milliseconds: 430)
-Duration? parseWebVTTTimestamp(String timestampString) {
-  if (!RegExp(_webVTTTimeStamp).hasMatch(timestampString)) {
-    return null;
-  }
-
-  final List<String> dotSections = timestampString.split('.');
-  final List<String> timeComponents = dotSections[0].split(':');
-
-  // Validating and parsing the `timestampString`, invalid format will result this method
-  // to return `null`. See https://www.w3.org/TR/webvtt1/#webvtt-timestamp for valid
-  // WebVTT timestamp format.
-  if (timeComponents.length > 3 || timeComponents.length < 2) {
-    return null;
-  }
-  int hours = 0;
-  if (timeComponents.length == 3) {
-    final String hourString = timeComponents.removeAt(0);
-    if (hourString.length < 2) {
-      return null;
-    }
-    hours = int.parse(hourString);
-  }
-  final int minutes = int.parse(timeComponents.removeAt(0));
-  if (minutes < 0 || minutes > 59) {
-    return null;
-  }
-  final int seconds = int.parse(timeComponents.removeAt(0));
-  if (seconds < 0 || seconds > 59) {
-    return null;
-  }
-
-  final List<String> milisecondsStyles = dotSections[1].split(' ');
-
-  final int milliseconds = int.parse(milisecondsStyles[0]);
-
-  return Duration(
-    hours: hours,
-    minutes: minutes,
-    seconds: seconds,
-    milliseconds: milliseconds,
-  );
 }
 
 // Parses a time stamp in an SubRip file into a Duration.
@@ -165,26 +129,6 @@ Duration? parseSubRipTimestamp(String timestampString) {
   );
 }
 
-// 00:09.000 --> 00:11.000
-List<Duration>? rangeFromWebVTTString(String line) {
-  final RegExp format = RegExp(_webVTTTimeStamp + _arrow + _webVTTTimeStamp);
-
-  if (!format.hasMatch(line)) {
-    return null;
-  }
-
-  final List<String> times = line.split(_arrow);
-
-  final Duration? start = parseWebVTTTimestamp(times[0]);
-  final Duration? end = parseWebVTTTimestamp(times[1]);
-
-  if (start == null || end == null) {
-    return null;
-  }
-
-  return [start, end];
-}
-
 // 00:00:06,000 --> 00:00:12,074
 List<Duration>? rangefromSubRipString(String line) {
   final RegExp format = RegExp(_subRipTimeStamp + _arrow + _subRipTimeStamp);
@@ -210,13 +154,13 @@ String extractTextFromHtml(String htmlString) {
   return htmlString.replaceAll(exp, '');
 }
 
-const String _webVTTTimeStamp = r'(\d+):(\d{2})(:\d{2})?\.(\d{3})';
-
 const String _subRipTimeStamp = r'\d\d:\d\d:\d\d,\d\d\d';
 
 const String _arrow = r' --> ';
 
-const String _webVTTSegment =
-    r'(\d+)?\n(\d{1,}:)?(\d{1,2}:)?(\d{1,2}).(\d+)\s?-->\s?(\d{1,}:)?(\d{1,2}:)?(\d{1,2}).(\d+)(.*(?:\r?(?!\r?).*)*)\n(.*(?:\r?\n(?!\r?\n).*)*)';
+const String _webVTTSegment = r'(?:(.+?)(?:\r\n?|\n))?'
+    r'(\d{2,}:)?(\d{2}:)(\d{2})\.(\d+)\s+-->\s+(\d{2,}:)?(\d{2}:)(\d{2})\.(\d+)\s*?([^\r\n]*?)(?:\r\n?|\n)'
+    r'(?<content>[^\0]*?)'
+    r'(?=(?:\r\n?|\n)*?(?:$|(?:.+?(?:\r\n?|\n))?.*?-->))';
 
 const String _html = r'<[^>]*>|&[^;]+;';

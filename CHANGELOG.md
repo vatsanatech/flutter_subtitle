@@ -1,3 +1,7 @@
+## 0.0.4
+
+- Improve newline character handling in WebVTT parsing.
+
 ## 0.0.3
 
 - suporrt webvtt and srt

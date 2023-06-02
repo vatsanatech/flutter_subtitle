@@ -1,15 +1,10 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: Dart
+name: Dark test
 
 on:
   push:
-    branches: [ "master", "main", "dev" ]
+    branches: ['master', 'main', 'dev']
   pull_request:
-    branches: [ "master" ]
+    branches: ['master']
 
 jobs:
   test:
@@ -21,10 +16,6 @@ jobs:
         with:
           channel: 'beta'
       - run: flutter --version
-      # https://github.com/dart-lang/setup-dart/blob/main/README.md
-      # - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
-      #   with:
-      #     sdk: main
       - run: dart pub get
       - run: dart format --output=none --set-exit-if-changed .
       - run: dart analyze

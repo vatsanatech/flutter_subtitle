@@ -91,12 +91,14 @@ List<Subtitle> parseFromSubRipString(String data) {
       continue;
     }
 
-    subtitles.add(Subtitle(
+    if(range.length>=2 && subtitleLine.length>=2){
+      subtitles.add(Subtitle(
       number: int.parse(subtitleLine[0]),
       start: range[0].inMilliseconds,
       end: range[1].inMilliseconds,
       text: extractTextFromHtml(subtitleLine.sublist(2).join('\n')),
     ));
+    }
   }
 
   return subtitles;

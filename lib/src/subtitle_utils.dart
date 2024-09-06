@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import '../flutter_subtitle.dart';
 
@@ -85,19 +86,27 @@ List<Subtitle> parseFromSubRipString(String data) {
   final subtitleStrings = readSubtitleFile(data);
 
   for (final List<String> subtitleLine in subtitleStrings) {
-    final range = rangefromSubRipString(subtitleLine[1]);
+    try{
+      if(subtitleLine.length <= 2) continue;
 
-    if (range == null) {
-      continue;
+      final range = rangefromSubRipString(subtitleLine[1]);
+
+      if (range == null) {
+        continue;
+      }
+
+      if(range.length>=2 && subtitleLine.length>=2){
+        subtitles.add(Subtitle(
+          number: int.parse(subtitleLine[0]),
+          start: range[0].inMilliseconds,
+          end: range[1].inMilliseconds,
+          text: extractTextFromHtml(subtitleLine.sublist(2).join('\n')),
+        ));
+      }
     }
-
-    if(range.length>=2 && subtitleLine.length>=2){
-      subtitles.add(Subtitle(
-      number: int.parse(subtitleLine[0]),
-      start: range[0].inMilliseconds,
-      end: range[1].inMilliseconds,
-      text: extractTextFromHtml(subtitleLine.sublist(2).join('\n')),
-    ));
+    catch(e,s){
+      log(e.toString(), name: 'flutter_subtitle');
+      log(s.toString());
     }
   }
 
